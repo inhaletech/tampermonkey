@@ -4,7 +4,7 @@
 // @version      0.1
 // @description  todo
 // @author       gregory.tkach, todo
-// @match        https://www.upwork.com/nx/find-work/
+// @match        http*://www.upwork.com/nx/find-work/*
 // @require      https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
 // @grant        none
 // ==/UserScript==
@@ -237,4 +237,8 @@
     }
 
     setInterval(renewEventListeners, 2000);
+
+    //todo: check via API is job post already pushed
+    //todo: test script on job post page
+    //todo: upload scriupt to github
 })();
