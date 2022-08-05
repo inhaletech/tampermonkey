@@ -11,12 +11,13 @@
 // @grant        none
 // ==/UserScript==
 
+
 (function() {
     'use strict';
 
     function getHtmlButton(isPushed)
     {
-        var out =  `
+        var out = `
         <div id="button_push_to_crm" class="cta send" style="margin-bottom: 20px" onclick="{ONCLICK}">
            <div>
               <button class="up-btn up-btn-default m-0 up-btn-block px-15" disabled = "{DISABLED}">
@@ -33,7 +34,7 @@
         return out;
     }
 
-    //TODO:REVIEW
+ //TODO:REVIEW
  // /////get request for id
     function checkIsJobPostAddedAndAddButton()
     {
@@ -58,7 +59,7 @@
                 response = JSON.parse(response)
                 jobPostExists = response.job_post_exists
             }
-            
+
             var htmlButton = getHtmlButton(jobPostExists)
             $(".cta-row").prepend(htmlButton)
         }
@@ -121,7 +122,7 @@
         //addToResult(out, "occupation-id", value)
     }
 
-    function addPostedAt(out) 
+    function addPostedAt(out)
     {
         var element = $('div#posted-on > .text-muted > .inline').first()
         var fullText = element.text()
@@ -133,36 +134,28 @@
 
         var durationAgoNumber = Number.parseInt(dateArray[0])
 
-        //todo: replace split with indexOf
         if (valueText.indexOf("year") != -1)
         {
             durationAgoNumber = durationAgoNumber * 365 * 24 * 60 * 60 * 1000
-
-        }            
+        }
+        else if (valueText.indexOf("month") != -1)
+        {
+            durationAgoNumber = durationAgoNumber * 30 * 24 * 60 * 60 * 1000
+        }
+        else if (valueText.indexOf("day") != -1)
+        {
+            durationAgoNumber = durationAgoNumber * 24 * 60 * 60 * 1000
+        }
+        else if (valueText.indexOf("hour") != -1)
+        {
+            durationAgoNumber = durationAgoNumber * 60 * 60 * 1000
+        }
         else if (valueText.indexOf("minute") != -1)
         {
             durationAgoNumber = durationAgoNumber * 60 * 1000
         }
 
         todayDate = todayDate - durationAgoNumber
-
-        // var HourText = textDate.split('hour')
-        if (HourText.length>1)
-        {
-            durationAgoNumber = durationAgoNumber * 60 * 60 * 1000
-        }
-
-        // var DayText = textDate.split('day')
-        if (DayText.length > 1)
-        {
-            durationAgoNumber = durationAgoNumber * 24 * 60 * 60 * 1000
-        }
-        // var MonthText = textDate.split('month')
-        if (MonthText.length > 1)
-        {
-            durationAgoNumber = durationAgoNumber * 30 * 24 * 60 * 60 * 1000
-        }
-
         var value = Number.parseInt((todayDate/1000))
 
         addToResult(out, "posted-at", value)
@@ -216,7 +209,7 @@
         addToResult(out, "reviews", value)
     }
 
-    function addPaymentVerified(out) 
+    function addPaymentVerified(out)
     {
         var value = $('.payment-verified').length > 0
 
@@ -230,7 +223,7 @@
         addToResult(out, "jobs-posted", jobsPosted)
     }
 
-    function addHireRate(out) 
+    function addHireRate(out)
     {
         var element = $("li[data-qa='client-job-posting-stats'] > div.text-muted").first()
         var fullText = element.text().trim()
@@ -271,131 +264,125 @@
         var value = new Date(valueDate)
 
         addToResult(out, "member-since", value)
-    } 
+    }
 
     // avg hourly rate paid
-    function addRatePaid(out) 
+    function addRatePaid(out)
     {
         var tags = $("strong[data-qa='client-hourly-rate']")
 
         if (tags.length == 0) return
 
-        var valueText = tags.first().text().split('\n')[1].trim()
+        var value = tags.first().text().split('\n')[1].trim()
 
-        addToResult(out, "client-hourly-rate", valueText)
+        addToResult(out, "client-hourly-rate", value)
      }
 
     function addHourlyRatePaid(out) // avg hourly rate paid- houers
     {
-        var value = $("div[data-qa='client-hours'].text-muted").first().text()
+        var tags = $("div[data-qa='client-hours'].text-muted").first().text()
 
-        if (value.length == 0) return
+        if (tags.length == 0) return
 
-        var valueText = value.split('\n')
-        var hourlyRateText = valueText[1].trim()
-        var hourlyRate = Number.parseInt(hourlyRateText)
+        var valueText = tags.split('\n')[1].trim()
 
-        addToResult(out, "hourlyRate", hourlyRate)
-    }   
+        var value = Number.parseInt(valueText)
+
+        addToResult(out, "hourlyRate", value)
+    }
 
     //TODO: test
     function addPriceTypeTimeLog(out) // hour price
     {
         var tags = $("div[data-cy='clock-timelog']")
-        
+
         if (tags.length == 0) return
 
-        var minPrice = ''
-
-        // var fullText = $($("div[data-cy='clock-timelog']")[0].nextElementSibling)
-        var fullText = $(tags.first().get().nextElementSibling)
+        var fullText = $(tags[0].nextElementSibling)
+        //var fullText = $(tags.first().get().nextElementSibling)
         var valueStrong = fullText.first().text().trim()
 
-        minPrice = valueStrong.split('-').slice()[0].split('$')[1]
+        var value = valueStrong.split('-').slice()[0].split('$')[1]
 
-        addToResult(out, "min-Price", minPrice)
+        addToResult(out, "min-Price", value)
     }
 
     // hour price
-    function addPriceTypeTimeLogMax(out) 
+    function addPriceTypeTimeLogMax(out)
     {
         var tags = $("div[data-cy='clock-timelog']")
-        
+
         if (tags.length == 0) return
 
-        var maxPrice = ''
-
-        var fullText = $(tags.first().get().nextElementSibling)
+        var fullText = $(tags[0].nextElementSibling)
+        //var fullText = $(tags.first().get().nextElementSibling)
         var valueStrong = fullText.first().text().trim()
 
-        maxPrice = valueStrong.split('$').slice(-1)[0]
+        var value = valueStrong.split('$').slice(-1)[0]
 
-        addToResult(out, "max-Price", maxPrice)
+        addToResult(out, "max-Price", value)
     }
 
     // fixed  price
-    function addFixedPrice(out) 
+    function addFixedPrice(out)
     {
         var tags = $("div[data-cy='fixed-price']")
 
         if (tags.length == 0) return
 
-        var fixedPrice =''
-
-        var fullText = $(tags.first().get().nextElementSibling)
+        var fullText = $(tags[0].nextElementSibling)
+       // var fullText = $(tags.first().get().nextElementSibling)
         var valueStrong = fullText.first().text().trim()
-        fixedPrice = valueStrong.split('$')[1]
 
-        addToResult(out, "fixedPrice", fixedPrice)
+        var value = valueStrong.split('$')[1]
+
+        addToResult(out, "fixedPrice", value)
     }
 
     // Less than nn hrs/week
-    function addHourInWeek(out) 
+    function addHourInWeek(out)
     {
         var tags = $("div[data-cy='clock-hourly']")
 
         if (tags.length == 0) return
 
-        var valueStrong =''
+        var value =''
 
         var fullText = $(tags.first().get().nextElementSibling)
-        valueStrong = fullText.first().text().trim()
+        value = fullText.first().text().trim()
 
-        addToResult(out, "hour-in-week", valueStrong)
+        addToResult(out, "hour-in-week", value)
     }
 
     function addProjectLength(out)
     {
-        var fullText = $("ul[class='cfe-ui-job-features p-0'] > li > div > strong > span[class='d-lg-none']")
-        var value = fullText.first().text().trim()
+        var element = $("ul[class='cfe-ui-job-features p-0'] > li > div > strong > span[class='d-lg-none']")
+        var value = element.first().text().trim()
 
         addToResult(out, "project-lengh", value)
     }
-   
+
     function addProjectType(out)
     {
-        var value = $("ul[class ='list-unstyled segmentations']>li>span")
-        var valueType =value.first().text()
+        var element = $("ul[class ='list-unstyled segmentations'] > li > span")
+        var value = element.first().text()
 
-        addToResult(out, "project-type", valueType)
+        addToResult(out, "project-type", value)
      }
 
-     function addActivityJobHires(out) 
+     function addActivityJobHires(out)
     {
-       var Massvalue =$("ul.list-unstyled > li[data-v-3c15e380]")
-       var valueText = ""
+       var tags =$("ul.list-unstyled > li[data-v-3c15e380]")
+
        var value = ""
 
-       if (Massvalue.length>0)
+       if (tags.length == 0) return
+
+       for (var tag in tags)
        {
-           for (var i=0;i<= Massvalue.length-1;i++)
+           if (tag.innerText.indexOf("Hires")>-1)
            {
-               valueText = Massvalue[i].innerText
-               if(valueText.indexOf("Hires")>-1)
-               {
-                  // value = valueText.split('\n')[1]
-                  value = valueText.split('Hires:')[1].trim()
-               }
+               value = tag.innerText.split('Hires:')[1].trim()
            }
        }
 
@@ -408,9 +395,9 @@
 
         var skillsNames = []
 
-        for(var tag in tags)
+        for (var tag in tags)
         {
-            skillsName.push(tag.innerText)
+            skillsNames.push(tag.innerText)
         }
 
         addToResult(out, "skills", skillsNames.join(","))
@@ -420,30 +407,20 @@
     {
         var tags = $("ul.list-unstyled > li > a")
 
+        var attachments = []
 
-        var attachHref
-        var attachAll=""
-
-        for (var i=0; i<=attachmMass.length-1;i++)
+        for (var tag in tags)
         {
-           attachHref = attachmMass[i].href
-            if (i<attachmMass.length-1)
-            {
-                attachAll = attachAll+ ''+attachHref+',\n'
-            }
-            else
-            {
-                attachAll = attachAll+ ''+attachHref
-            }
-
+            attachments.push(tag.href)
         }
 
-        addToResult(out, "attachment", attachAll)
+        addToResult(out, "attachment", attachments.join(","))
     }
 
     function addCompanySize(out)
     {
-      var value = $("div[data-qa='client-company-profile-size']").first().text().trim().split('\n')[0]
+      var element = $("div[data-qa='client-company-profile-size']").first().text().trim()
+      var value = element.split('\n')[0]
 
       addToResult(out, "company-size", value)
     }
@@ -452,39 +429,35 @@
     {
         //var value = $("div[class='d-none d-lg-block']>div").textContent.trim().split('Send a proposal for: ')[1].split('Connect')[0].trim()
 
-        var tags = $("div[class='d-lg-none mt-10']>div")
+        var element = $("div[class='d-lg-none mt-10'] > div")
 
-        if(valueMass.length == 0) return
+        if (element.length == 0) return
 
-        var valueText = tags.first().text().trim().split('Send a proposal for:')[1].split('Connects')[0].trim()
+        var value = element.first().text().trim().split('Send a proposal for:')[1]
+        value = value.split('Connects')[0].trim()
 
-        addToResult(out, "connect-to-submit", valueText)
+        addToResult(out, "connect-to-submit", value)
     }
 
     function addActivityJobProposals(out)
     {
-       var Massvalue =$("ul.list-unstyled>li[data-v-3c15e380]")
-       var valueText = ""
-       var value = ""
+        var tags =$("ul.list-unstyled>li[data-v-3c15e380]")
 
-       if (Massvalue.length>0)
-       {
-           for (var i=0;i<= Massvalue.length-1;i++)
-           {
-               valueText = Massvalue[i].innerText
-               if(valueText.indexOf("Proposals:")>-1)
-               {
-                  // value = valueText.split('\n')[1]
-                  value = valueText.split('Proposals:')[1].trim()
-               }
-           }
-       }
-        else
+        var valueText = ""
+        var value = ""
+
+        if (tags.length=0) return
+
+        for (var tag in tags)
         {
-            value = $("ul.list-unstyled>li[data-v-3c15e380]").innerText.split('Proposals:')[1].trim()
+            valueText = tag.innerText
+            if(valueText.indexOf("Proposals:")>-1)
+            {
+                value = valueText.split('Proposals:')[1].trim()
+            }
         }
-        
-       addToResult(out, "activity-job-proposals", value)
+
+        addToResult(out, "activity-job-proposals", value)
     }
 
 
@@ -492,7 +465,7 @@
     {
         var out = {}
 
-        ////// 
+        //////
 
         addRatePaid(out)
         addHourlyRatePaid(out)
@@ -562,10 +535,18 @@
 
   }
 
+debugger
     function renewButtonPushToCRM()
     {
         //TODO: remove button with #button_push_to_crm
-        
+       var deletedButton = document.getElementById('button_push_to_crm')
+
+       if (deletedButton)
+        {
+           remove('button_push_to_crm')
+        }
+
+
     }
 
     function renewEventListeners()
