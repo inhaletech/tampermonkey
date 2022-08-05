@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         test_upwork.com
+// @name         upwork.com
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  todo
@@ -20,53 +20,72 @@
         var out = `
         <div id="button_push_to_crm" class="cta send" style="margin-bottom: 20px" onclick="{ONCLICK}">
            <div>
-              <button class="up-btn up-btn-default m-0 up-btn-block px-15" disabled = "{DISABLED}">
+              <button class="up-btn up-btn-default m-0 up-btn-block px-15" {DISABLED}>
                 <span>{TEXT}</span>
               </button>
            </div>
         </div>
         `;
 
-        out = out.replaceAll("{DISABLED}", isPushed ? "true" : "false")
+        out = out.replaceAll("{DISABLED}", isPushed ? "disabled" : "")
         out = out.replaceAll("{ONCLICK}", isPushed ? "" : "pushToCRM()")
         out = out.replaceAll("{TEXT}", isPushed ? "✅ Was Pushed" : "Push to CRM")
 
         return out;
     }
 
- //TODO:REVIEW
- // /////get request for id
+    function addButtonPushToCRM(jobPostExists)
+    {
+        var htmlButton = getHtmlButton(jobPostExists)
+        $(".cta-row").prepend(htmlButton)
+    }
+
+    function removeButtonPushToCRM()
+    {
+        $("#button_push_to_crm").remove()
+    }
+
+    //TODO:REVIEW
+    // /////get request for id
     function checkIsJobPostAddedAndAddButton()
     {
-        var objWithID = {}
-        addID(objWithID)
-        var id = objWithID["id"]
+        var data = {}
+        addID(data)
+        data["action"] = "CHECK_JOB_POST"
 
-        var appScriptUrl = "https://script.google.com/macros/s/AKfycbwWIJueECMDeMrLfrYGk6XRDWKErko4UN_upfel7fZq852yln0jdpH1hb9LOgcJAbYc/exec?action=CHECK_JOB_POST&id=" + id + ""
+        debugger
 
-        try
-        {
-            var request = new XMLHttpRequest()
-            request.open('GET', appScriptUrl, false)// якщо синхроний -false , асинхронний видає помилку
-            request.send(null)
+        //var request = {}
+        //request.type = "POST"
+        //request.contentType = "application/json; charset=utf-8"
+        //request.dataType = "json"
+        //request.data = JSON.stringify(data)
+        //request.url = "https://script.google.com/macros/s/AKfycbwWIJueECMDeMrLfrYGk6XRDWKErko4UN_upfel7fZq852yln0jdpH1hb9LOgcJAbYc/exec"
+        //request.success = (data) => addButtonPushToCRM(data.job_post_exists)
+        //request.error = (error) => console.log('TODO: HTTP REQUEST ERROR ' + JSON.stringify(error))
+        //$.ajax(request)
 
-            var jobPostExists = false
+//        var url = "https://script.google.com/macros/s/AKfycbwWIJueECMDeMrLfrYGk6XRDWKErko4UN_upfel7fZq852yln0jdpH1hb9LOgcJAbYc/exec?action=CHECK_JOB_POST&id="+data["id"]+""
+//
+//try
+//{
+//    var GetRequest = new XMLHttpRequest()
+//    GetRequest.open('GET', url, false)// якщо синхроний -false , асинхронний видає помилку
+//    GetRequest.send(null)
+//
+//    if(GetRequest.status === 200)
+//    {
+//        console.log(GetRequest.responseText)
+//        var response = GetRequest.responseText
+//        response = JSON.parse(response)
+//    }
+//}
+//catch (error)
+//{
+//    console.log('!!!!have error in your request!!!')
+//    console.log(error)
+//}
 
-            if(request.status === 200)
-            {
-                console.log(request.responseText)
-                var response = request.responseText
-                response = JSON.parse(response)
-                jobPostExists = response.job_post_exists
-            }
-
-            var htmlButton = getHtmlButton(jobPostExists)
-            $(".cta-row").prepend(htmlButton)
-        }
-        catch (error)
-        {
-            console.log('TODO: HTTP REQUEST ERROR ' + error)
-        }
     }
 
     //
@@ -117,7 +136,8 @@
     }
 
     //TODO: implement
-    function addOccupationID(out) // not done
+    // not done
+    function addOccupationID(out)
     {
         //addToResult(out, "occupation-id", value)
     }
@@ -189,7 +209,8 @@
         addToResult(out, "city", value)
     }
 
-    function addRate(out) // рейтинг
+    // rating
+    function addRate(out)
     {
         var element = $('div.rating > span.nowrap').first()
         var fullText = element.text().trim()
@@ -199,7 +220,7 @@
         addToResult(out, "rate", value)
     }
 
-    function addReviews(out) //
+    function addReviews(out)
     {
         var element = $('div.rating > span.nowrap').first()
         var fullText = element.text().trim()
@@ -370,7 +391,7 @@
         addToResult(out, "project-type", value)
      }
 
-     function addActivityJobHires(out)
+    function addActivityJobHires(out)
     {
        var tags =$("ul.list-unstyled > li[data-v-3c15e380]")
 
@@ -378,12 +399,13 @@
 
        if (tags.length == 0) return
 
-       for (var tag in tags)
+       for (var tag of tags)
        {
-           if (tag.innerText.indexOf("Hires")>-1)
-           {
-               value = tag.innerText.split('Hires:')[1].trim()
-           }
+           if (tag.innerText.indexOf("Hires") == -1) continue
+
+           value = tag.innerText.split('Hires:')[1].trim()
+
+           break
        }
 
        addToResult(out, "activity-job-hires", value)
@@ -434,6 +456,7 @@
         if (element.length == 0) return
 
         var value = element.first().text().trim().split('Send a proposal for:')[1]
+
         value = value.split('Connects')[0].trim()
 
         addToResult(out, "connect-to-submit", value)
@@ -443,18 +466,17 @@
     {
         var tags =$("ul.list-unstyled>li[data-v-3c15e380]")
 
-        var valueText = ""
         var value = ""
 
-        if (tags.length=0) return
+        if (tags.length == 0) return
 
-        for (var tag in tags)
+        for (var tag of tags)
         {
-            valueText = tag.innerText
-            if(valueText.indexOf("Proposals:")>-1)
-            {
-                value = valueText.split('Proposals:')[1].trim()
-            }
+            if(tag.innerText.indexOf("Proposals:") == -1) continue
+
+            value = tag.innerText.split('Proposals:')[1].trim()
+
+            break
         }
 
         addToResult(out, "activity-job-proposals", value)
@@ -522,31 +544,24 @@
 
         console.log(out)
 
-        // push to automation
+        // push to make.com
         var request = {}
         request.type = "POST"
         request.url = "https://hook.eu1.make.com/elb021vtg3yydenqy2qzoviaj2b6lma9"
         request.contentType = "application/json; charset=utf-8"
         request.dataType = "json"
         request.data = JSON.stringify(out)
-        request.success = (data) => console.log("request sent success")
-        request.error = (errorMessage) => console.log("request sent error")
+        request.success = function (data) { removeButtonPushToCRM(); addButtonPushToCRM(true) }
+        request.error = (error) => console.log('TODO: HTTP REQUEST ERROR ' + JSON.stringify(error))
         $.ajax(request);
-
   }
 
-debugger
+
     function renewButtonPushToCRM()
     {
-        //TODO: remove button with #button_push_to_crm
-       var deletedButton = document.getElementById('button_push_to_crm')
+        removeButtonPushToCRM()
 
-       if (deletedButton)
-        {
-           remove('button_push_to_crm')
-        }
-
-
+        checkIsJobPostAddedAndAddButton()
     }
 
     function renewEventListeners()
