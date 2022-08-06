@@ -38,8 +38,6 @@
 
     function addButtonPushToCRM(jobPostExists)
     {
-        debugger
-
         var htmlButton = getHtmlButton(jobPostExists)
         $(".cta-row").prepend(htmlButton)
     }
@@ -49,69 +47,53 @@
         $("#button_push_to_crm").remove()
     }
 
+    function onXHRError(error)
+    {
+        debugger
+        console.log('HTTP REQUEST ERROR ' + JSON.stringify(error))
+    }
+
+
     //TODO:REVIEW
     // /////get request for id
     function checkIsJobPostAddedAndAddButton()
     {
-
-         // var appScriptUrl = "https://script.google.com/macros/s/AKfycbz9AwjzgJlWHdGJyL5-zJj23ckH_JOlz1qS00Wc44XOldXx5nsKKbCwnvJPtfbtfuEa/exec?action=CHECK_JOB_POST&id=" + ID + ""
-        debugger
-
         var data = {}
         addID(data)
-
+        var error = null
 
         try
         {
             var url = "https://script.google.com/macros/s/AKfycbz9AwjzgJlWHdGJyL5-zJj23ckH_JOlz1qS00Wc44XOldXx5nsKKbCwnvJPtfbtfuEa/exec?action=CHECK_JOB_POST&id=" + data.id + ""
-            var GetRequest = new XMLHttpRequest()
-            GetRequest.open('GET',url, false)
+            var request = new XMLHttpRequest()
+            request.open('GET', url, true)
+            request.ontimeout = onXHRError
+            request.onerror = onXHRError
 
-
-            if(GetRequest.status === 200)
+            request.onreadystatechange = function(e)
             {
-                console.log(GetRequest.responseText)
-                var response = GetRequest.responseText
-                response = JSON.parse(response)
+                if (request.readyState != 4) return
+
+                if (request.status === 200)
+                {
+                    console.log(request.responseText)
+
+                    var response = request.responseText
+                    response = JSON.parse(response)
+                    addButtonPushToCRM(response.job_post_exists)
+                }
+                else
+                {
+                   onXHRError(request.responseText)
+                }
             }
+
+            request.send()
         }
-        catch (error)
+        catch (e)
         {
-            console.log('HTTP REQUEST ERROR ' + error)
+            onXHRError(e.stack)
         }
-
-
-     //   data["action"] = "CHECK_JOB_POST"
-       // data = JSON.stringify(data)
-
-      //  var str = jQuery.param( data );
-      //  var dataStr = $( "#results" ).text( str );
-
-
-     //   var url = "https://script.google.com/macros/s/AKfycbyTc-ySHKq5QX3-naLA-asy2VOqxc99BWPQDFevR7REczNYKb2KfEEvbI4LI5tG7CFF/exec?action=CHECK_JOB_POST&id="+data["id"]+""
-
-     /*   debugger
-
-       var request = {}
-        request.method = "GET"
-        request.url = "https://script.google.com/macros/s/AKfycbz9AwjzgJlWHdGJyL5-zJj23ckH_JOlz1qS00Wc44XOldXx5nsKKbCwnvJPtfbtfuEa/exec?" + dataStr + ""
-
-
-      //  request.success = (response) => console.log(response)//addButtonPushToCRM(response.job_post_exists)
-        request.success = function (response) {console.log(response.status)
-                                               console.log(response.json())
-                                              }
-
-
-        request.error = (error) => console.log('TODO: HTTP REQUEST ERROR ' + JSON.stringify(error))
-        $.ajax(request)
-
-
-       // console.log(reresponse.status)
-       // */
-
-        //        var url = "https://script.google.com/macros/s/AKfycbyTc-ySHKq5QX3-naLA-asy2VOqxc99BWPQDFevR7REczNYKb2KfEEvbI4LI5tG7CFF/exec?action=CHECK_JOB_POST&id="+data["id"]+""
-
     }
 
     //
