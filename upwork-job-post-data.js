@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         upwork.com
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  todo
 // @author       gregory.tkach, nataliia.kupich
 // @match        http*://www.upwork.com/nx/jobs/*
@@ -146,10 +146,14 @@
     }
 
     //TODO: implement
-    // not done
+
     function addOccupationID(out)
     {
         //addToResult(out, "occupation-id", value)
+        var element = $(".cfe-ui-job-breadcrumbs > span >a")
+        var value = element[0].href.split('uid=')[1]
+
+        addToResult(out, "occupation-id", value)
     }
 
     function addPostedAt(out)
@@ -280,6 +284,7 @@
     {
         var value = $("strong[data-qa='client-spend'] > span").first().text().trim()
         value= value.replace('$','')
+        value = value.replace('M+','000000')
         value = value.replace('k+','000')
         value = value.replace('+','')
 
@@ -310,7 +315,8 @@
         addToResult(out, "client-hourly-rate", value)
      }
 
-    function addHourlyRatePaid(out) // avg hourly rate paid- houers
+    // avg hourly rate paid- houers
+    function addHourlyRatePaid(out)
     {
         var tags = $("div[data-qa='client-hours'].text-muted").first().text()
 
@@ -323,8 +329,8 @@
         addToResult(out, "hourlyRate", value)
     }
 
-    //TODO: test
-    function addPriceTypeTimeLog(out) // hour price
+    // hour price MIN
+    function addPriceTypeTimeLog(out)
     {
         var tags = $("div[data-cy='clock-timelog']")
 
@@ -339,7 +345,7 @@
         addToResult(out, "min-Price", value)
     }
 
-    // hour price
+    // hour price max
     function addPriceTypeTimeLogMax(out)
     {
         var tags = $("div[data-cy='clock-timelog']")
@@ -468,7 +474,7 @@
 
         var value = element.first().text().trim().split('Send a proposal for:')[1]
 
-        value = value.split('Connects')[0].trim()
+        value = value.split('Connect')[0].trim()
 
         addToResult(out, "connect-to-submit", value)
     }
@@ -493,6 +499,17 @@
         addToResult(out, "activity-job-proposals", value)
     }
 
+    function addQuestions(out)
+    {
+        var tags = $("section[class='up-card-section']>div>ol>li")
+        var value = []
+
+        for (var tag of tags)
+        {
+            value.push(tag.innerText)
+        }
+         addToResult (out, "questions", value.join("\n\n"))
+    }
 
     window.pushToCRM = function()
     {
@@ -521,6 +538,8 @@
         addAttachment(out)
 
         addConnectsToSubmit(out)
+
+        addQuestions(out)
 
         ////////.
 
@@ -560,7 +579,8 @@
         var url = "https://hook.eu1.make.com/elb021vtg3yydenqy2qzoviaj2b6lma9"
 
         try
-        {   var request = new XMLHttpRequest()
+        {
+            var request = new XMLHttpRequest()
             var dataFormated = JSON.stringify(out)
 
             console.log(dataFormated)
