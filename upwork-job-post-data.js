@@ -38,6 +38,7 @@
 
     function addButtonPushToCRM(jobPostExists)
     {
+
         var htmlButton = getHtmlButton(jobPostExists)
         $(".cta-row").prepend(htmlButton)
     }
@@ -49,7 +50,7 @@
 
     function onXHRError(error)
     {
-        debugger
+
         console.log('HTTP REQUEST ERROR ' + JSON.stringify(error))
     }
 
@@ -58,6 +59,7 @@
     // /////get request for id
     function checkIsJobPostAddedAndAddButton()
     {
+
         var data = {}
         addID(data)
         var error = null
@@ -291,6 +293,7 @@
         var fullText = element.text().trim()
         var valueDate = removeWordsAndTrim(fullText, ['Member since'])
         var value = new Date(valueDate)
+        value = value.toISOString()
 
         addToResult(out, "member-since", value)
     }
@@ -425,7 +428,7 @@
 
         var skillsNames = []
 
-        for (var tag in tags)
+        for (var tag of tags)
         {
             skillsNames.push(tag.innerText)
         }
@@ -439,7 +442,7 @@
 
         var attachments = []
 
-        for (var tag in tags)
+        for (var tag of tags)
         {
             attachments.push(tag.href)
         }
@@ -549,24 +552,60 @@
 
         addMemberSince(out)
 
-
         console.log(out)
 
         // push to make.com
-        var request = {}
-        request.type = "POST"
-        request.url = "https://hook.eu1.make.com/elb021vtg3yydenqy2qzoviaj2b6lma9"
-        request.contentType = "application/json; charset=utf-8"
-        request.dataType = "json"
-        request.data = JSON.stringify(out)
-        request.success = function (data) { removeButtonPushToCRM(); addButtonPushToCRM(true) }
-        request.error = (error) => console.log('TODO: HTTP REQUEST ERROR ' + JSON.stringify(error))
-        $.ajax(request);
-  }
+
+        var error = null
+        var url = "https://hook.eu1.make.com/elb021vtg3yydenqy2qzoviaj2b6lma9"
+
+        try
+        {   var request = new XMLHttpRequest()
+            var dataFormated = JSON.stringify(out)
+
+            console.log(dataFormated)
+
+
+            request.open('POST', url, true)
+
+            request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+            request.ontimeout = onXHRError
+            request.onerror = onXHRError
+
+            request.onreadystatechange = function(e)
+            {
+                if (request.readyState != 4) return
+
+                if (request.status === 200)
+                {
+                    console.log(request.responseText)
+
+                    var response = request.responseText
+
+                    removeButtonPushToCRM();
+
+                    addButtonPushToCRM(true)
+
+                }
+                else
+                {
+                    onXHRError(request.responseText)
+                }
+            }
+
+            request.send(dataFormated)
+        }
+        catch (e)
+        {
+            onXHRError(e.stack)
+        }
+    }
 
 
     function renewButtonPushToCRM()
     {
+
         removeButtonPushToCRM()
 
         checkIsJobPostAddedAndAddButton()
