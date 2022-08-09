@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         upwork.com
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  todo
 // @author       gregory.tkach, nataliia.kupich
 // @match        http*://www.upwork.com/nx/jobs/*
@@ -373,6 +373,7 @@
         var valueStrong = fullText.first().text().trim()
 
         var value = valueStrong.split('$')[1]
+        value = value.replace(',','')
 
         addToResult(out, "fixedPrice", value)
     }
