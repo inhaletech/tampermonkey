@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         upwork.com
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  todo
 // @author       gregory.tkach, nataliia.kupich
 // @match        http*://www.upwork.com/nx/jobs/*
@@ -253,7 +253,20 @@
 
     function addJobsPosted(out)
     {
-        var jobsPosted = $("li[data-qa='client-job-posting-stats'] > strong").last().text().trim().split('\n')[0]
+        var jobsPosted
+        //= $("li[data-qa='client-job-posting-stats'] > strong").last().text().trim().split('\n')[0]
+        var tags = $("li[data-qa='client-job-posting-stats'] > strong").last()
+
+        if (tags.length == 0) return
+
+        for (var tag of tags)
+        {
+            if(tag.innerText.indexOf("jobs") == -1) continue
+
+            jobsPosted = tag.innerText.split('jobs')[0].trim()
+
+            break
+        }
 
         addToResult(out, "jobs-posted", jobsPosted)
     }
@@ -311,6 +324,7 @@
         if (tags.length == 0) return
 
         var value = tags.first().text().split('\n')[1].trim()
+        value = value.replace('$','')
 
         addToResult(out, "client-hourly-rate", value)
      }
