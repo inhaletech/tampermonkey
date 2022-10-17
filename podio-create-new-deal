@@ -1,0 +1,177 @@
+// ==UserScript==
+// @name         podio.com
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  create new deal
+// @author       nataliia.kupich
+// @match        http*://podio.com/inhaletech/tets/apps/patlive/items/*
+// @match        http*://podio.com/inhaletech/tets/apps/*
+// @require      https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    function getHtmlButton()
+    {
+        var out =
+          ` <div id="button_create_new_deal" onclick="createNewDeal()">
+                     <div>
+                        <button class="button-new secondary baby-button " type="button">
+                          <span>Create New Deal</span>
+                        </button>
+                     </div>
+                  </div>  `;
+
+    return out
+    }
+
+    window.createNewDeal = function() // window
+    {
+        var isExecuted = confirm("Create a new deal?");
+
+        if (isExecuted = false) return
+
+        var out = {}
+
+        var apn = $("li#apn>div>div[class='frame-content']>div>p").first().text()
+        out.apn = apn
+        console.log(out)
+
+        var error = null
+        var url = "https://hook.eu1.make.com/59sdffs5czfkpc1j8ep49d15asm42rae"
+
+        try
+        {
+            var request = new XMLHttpRequest()
+            var dataFormated = JSON.stringify(out)
+
+            console.log(dataFormated)
+
+
+            request.open('POST', url, true)
+
+            request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+            request.ontimeout = onXHRError
+            request.onerror = onXHRError
+
+            request.onreadystatechange = function(e)
+            {
+                if (request.readyState != 4) return
+
+                if (request.status === 200)
+                {
+                    console.log(request.responseText)
+                    console.log(request.status)
+
+                    var response = request.responseText
+
+                 // CREATE NEW CONTACT FUNCTION
+                   createContact()
+                 //
+
+                }
+                else
+                {
+                    onXHRError("Reference number is incorrect.")
+                }
+            }
+
+            request.send(dataFormated)
+        }
+        catch (e)
+        {
+            onXHRError(e.stack)
+        }
+    }
+
+    function onXHRError(error)
+    {
+        console.log('HTTP REQUEST ERROR ' + JSON.stringify(error))
+        alert(error)
+    }
+
+    function createContact()
+    {
+        var out = {}
+        var itemId = $(".print--link").attr("href").split("item/")[1]
+        out.itemId = itemId
+
+        var error = null
+        var url = "https://hook.eu1.make.com/1c7d9atwlfwq5qb70yis7d1hkjmb4oxp"
+
+        try
+        {
+            var request = new XMLHttpRequest()
+            var dataFormated = JSON.stringify(out)
+
+            console.log(dataFormated)
+
+            request.open('POST', url, true)
+
+            request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+            request.ontimeout = onXHRError
+            request.onerror = onXHRError
+
+            request.onreadystatechange = function(e)
+            {
+                if (request.readyState != 4) return
+
+                if (request.status === 200)
+                {
+                    console.log(request.responseText)
+
+                    var response = request.responseText
+                    alert("Contact has been created.")
+
+                }
+                else
+                {
+                    onXHRError("This contact already exists. Please add a new deal manually")
+                }
+            }
+
+            request.send(dataFormated)
+        }
+        catch (e)
+        {
+            onXHRError(e.stack)
+        }
+
+    }
+
+    function addButtonCreateNewDeal()
+    {
+        var htmlButton = getHtmlButton()
+        $("#creating>div.frame-wrapper>div.frame-content>div[class='value view-mode']").prepend(htmlButton)
+    }
+
+    function removeButtonnCreateNewDeal()
+    {
+        $("#button_create_new_deal").remove()
+    }
+
+    function renewButtonCreateNewDeal()
+    {
+        removeButtonnCreateNewDeal()
+        addButtonCreateNewDeal()
+    }
+
+    function renewEventListeners()
+    {
+       $(".content").off('click');
+       $(".content").on('click', function() { setTimeout(renewButtonCreateNewDeal, 1000) });
+       $(".button-new.add-item.primary.baby-button").off('click');
+       $(".button-new.add-item.primary.baby-button").on('click', function() { setTimeout(renewButtonCreateNewDeal, 1000) });
+       $(".document").off('click');
+       $(".document").on('click', function() { setTimeout(renewButtonCreateNewDeal, 1000) });
+    }
+
+
+    setInterval(renewEventListeners, 1000);
+    setTimeout(renewButtonCreateNewDeal, 1000);
+
+})();
