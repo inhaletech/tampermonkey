@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         podio.com
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  create new deal
 // @author       nataliia.kupich
-// @match        http*://podio.com/inhaletech/tets/apps/patlive/items/*
+// @match        http*://podio.com/richland-acquisitions/richland-acquisitions/apps/*
 // @match        http*://podio.com/inhaletech/tets/apps/*
 // @require      https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
 // @grant        none
@@ -35,12 +35,26 @@
 
     function createContact()
     {
+        debugger
+
         var out = {}
-        var itemId = $(".print--link").attr("href").split("item/")[1]
+       // var itemId = $(".print--link")
+        var itemId = $("li[class='float-left share verbose']")
+
+        if(itemId.length===0)
+        {
+            alert("Save this item before making a deal!")
+            return
+        }
+
+       // itemId.attr("href").split("item/")[1]
+        itemId = itemId.attr("data-id")
+
         out.itemId = itemId
 
         var error = null
-        var url = "https://hook.eu1.make.com/1c7d9atwlfwq5qb70yis7d1hkjmb4oxp"
+       // var url = "https://hook.eu1.make.com/1c7d9atwlfwq5qb70yis7d1hkjmb4oxp"// test
+        var url = "https://hook.eu1.make.com/xgwk81iqg27kdp2ai91utn653mlapoi7"// finel
 
         try
         {
@@ -70,7 +84,7 @@
                 }
                 else
                 {
-                    onXHRError("This contact already exists. Please add a new deal manually")
+                    onXHRError("Error with creating a contact. Possible mistakes:\n1. Wrong reference number format.\n2. This contact already exists.\n3. There is no data for this contact in the Google Drive database.\nPlease check this and try again.")
                 }
             }
 
@@ -83,7 +97,7 @@
 
     }
 
-    window.createNewDeal = function() // window
+    window.createNewDeal = function() 
     {
 
         var isExecuted = confirm("Create a new deal?");
@@ -93,62 +107,34 @@
 
         if (isExecuted)
         {
-            var out = {}
+            var apn = $("li#apn>div>div[class='frame-content']>div>p").first()
 
-            var apn = $("li#apn>div>div[class='frame-content']>div>p").first().text()
-            out.apn = apn
-            console.log(out)
-
-            var error = null
-            var url = "https://hook.eu1.make.com/59sdffs5czfkpc1j8ep49d15asm42rae"
-
-            try
+            if (apn.length===0 || apn.text().split("-").length<2 )
             {
-                var request = new XMLHttpRequest()
-                var dataFormated = JSON.stringify(out)
+                alert("Reference number is incorrect. Set it.")
+            }
+            else
+            {
+                var firstPart = apn.text().split("-")[0]
+                var secPart = apn.text().split("-")[1]
 
-                console.log(dataFormated)
-
-
-                request.open('POST', url, true)
-
-                request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-
-                request.ontimeout = onXHRError
-                request.onerror = onXHRError
-
-                request.onreadystatechange = function(e)
+                if ( firstPart.length ===4 & (/^[A-Z]+$/.test(firstPart)) & secPart.length>=4 )
                 {
-                    if (request.readyState != 4) return
+                    debugger
+                    console.log(true)
 
-                    if (request.status === 200)
-                    {
-                        console.log(request.responseText)
-                        console.log(request.status)
-
-                        var response = request.responseText
-
-                        // CREATE NEW CONTACT FUNCTION
-                        createContact()
-                        //
-
-                    }
-                    else
-                    {
-                        onXHRError("Reference number is incorrect.")
-                    }
+                    createContact()
                 }
+                else
+                {
+                    debugger
+                    console.log(false)
 
-                request.send(dataFormated)
-            }
-            catch (e)
-            {
-                onXHRError(e.stack)
+                    alert("Reference number is incorrect.")
+                }
             }
         }
-        else
-        {
-        }
+        else{}
     }
 
     function addButtonCreateNewDeal()
@@ -170,10 +156,11 @@
 
     function renewEventListeners()
     {
-       $("#wrapper").off('click');
-       $("#wrapper").on('click', function() { setTimeout(renewButtonCreateNewDeal, 1000) });
+        $("#wrapper").off('click');
+        $("#wrapper").on('click', function() { setTimeout(renewButtonCreateNewDeal, 1000) });
 
     }
+
 
     setInterval(renewEventListeners, 1000);
     setTimeout(renewButtonCreateNewDeal, 1000);
