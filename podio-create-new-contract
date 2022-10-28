@@ -1,0 +1,206 @@
+// ==UserScript==
+// @name         podio.com create contracts
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  create new contract
+// @author       nataliia.kupich
+// @match        http*://podio.com/inhaletech/tets/apps/patlive/items/*
+// @match        http*://podio.com/inhaletech/tets/apps/*
+// @require      https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    function getHtmlButton(buttonId)
+    {
+        var out =``
+
+        if (buttonId === "#button_create_new_contract")
+        {
+            out =
+                ` <div id="button_create_new_contract" onclick="generateNewContract()">
+                     <div>
+                        <button class="button-new secondary baby-button " type="button">
+                          <span>Generate Contract</span>
+                        </button>
+                     </div>
+                  </div>  `;
+
+            return out
+        }
+
+       /* if (buttonId === "#button_create_new_deal")
+        {
+            out =
+                ` <div id="button_create_new_deal" onclick="createNewDeal()">
+                     <div>
+                        <button class="button-new secondary baby-button " type="button">
+                          <span>Create New Deal</span>
+                        </button>
+                     </div>
+                  </div>  `;
+
+            return out
+        }
+        */
+    }
+ 
+    function onXHRError(error)
+    {
+        console.log('HTTP REQUEST ERROR ' + JSON.stringify(error))
+        alert(error)
+    }
+
+    function createContact()
+    {
+        var out = {}
+        var itemId = $(".print--link").attr("href").split("item/")[1]
+        out.itemId = itemId
+
+        var error = null
+        var url = "https://hook.eu1.make.com/1c7d9atwlfwq5qb70yis7d1hkjmb4oxp"
+
+        try
+        {
+            var request = new XMLHttpRequest()
+            var dataFormated = JSON.stringify(out)
+
+            console.log(dataFormated)
+
+            request.open('POST', url, true)
+
+            request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+            request.ontimeout = onXHRError
+            request.onerror = onXHRError
+
+            request.onreadystatechange = function(e)
+            {
+                if (request.readyState != 4) return
+
+                if (request.status === 200)
+                {
+                    console.log(request.responseText)
+
+                    var response = request.responseText
+                    alert("Contact has been created.")
+
+                }
+                else
+                {
+                    onXHRError("This contact already exists. Please add a new deal manually")
+                }
+            }
+
+            request.send(dataFormated)
+        }
+        catch (e)
+        {
+            onXHRError(e.stack)
+        }
+
+    }
+
+
+    window.generateNewContract = function()
+    {
+        var out = {}
+        var itemId = $(".print--link").attr("href").split("item/")[1]
+        out.itemId = itemId
+
+        var error = null
+        var url = "https://hook.eu1.make.com/nem6qe6af4mu9fpq34el7tc028hrsnum"
+
+        try
+        {
+            var request = new XMLHttpRequest()
+            var dataFormated = JSON.stringify(out)
+
+            console.log(dataFormated)
+
+            request.open('POST', url, true)
+
+            request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+            request.ontimeout = onXHRError
+            request.onerror = onXHRError
+
+            request.onreadystatechange = function(e)
+            {
+                if (request.readyState != 4) return
+
+                if (request.status === 200)
+                {
+                    console.log(request.responseText)
+
+                    var response = request.responseText
+                    alert("New Contract has been created.")
+
+                }
+                else
+                {
+                    onXHRError("Сontract has not been created")
+                }
+            }
+
+            request.send(dataFormated)
+        }
+        catch (e)
+        {
+            onXHRError(e.stack)
+        }
+
+    }
+
+    function addButton(frameId, buttonId)
+    {
+        debugger
+
+        var htmlButton = getHtmlButton(buttonId)
+
+        $(frameId+">div.frame-wrapper>div.frame-content>div[class='value view-mode']").prepend(htmlButton)
+       
+    }
+
+    function removeButtonn(buttonId)
+    {
+        $(buttonId).remove()
+    }
+
+    function renewHTMLButton()
+    {
+        debugger
+
+        //var frameId = ''
+        //var buttonId = ""
+
+       // if ( $("#generate-contract").length > 0)
+       // {
+         var   frameId = '#generate-contract'
+         var   buttonId = "#button_create_new_contract"
+       //  }
+
+      //  if ( $("#creating").length > 0 )
+      //  {
+      //     frameId = '#creating'
+      //      buttonId = "#button_create_new_deal"
+      // }
+
+        removeButtonn(buttonId)
+        addButton(frameId, buttonId)
+    }
+
+    function renewEventListeners()
+    {
+       $("#wrapper").off('click');
+       $("#wrapper").on('click', function() { setTimeout(renewHTMLButton, 1000) });
+
+    }
+
+
+    setInterval(renewEventListeners, 1000);
+    setTimeout(renewHTMLButton, 1000);
+
+})();
