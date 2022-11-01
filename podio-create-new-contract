@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         podio.com create contracts
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  create new contract
 // @author       nataliia.kupich
 // @match        http*://podio.com/inhaletech/tets/apps/patlive/items/*
 // @match        http*://podio.com/inhaletech/tets/apps/*
+// @match        http*://podio.com/richland-acquisitions/richland-acquisitions/apps/*
 // @require      https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
 // @grant        none
 // ==/UserScript==
