@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         podio.com create and send contracts
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  create new contract. send contract
 // @author       nataliia.kupich
-// @match        http*://podio.com/inhaletech/tets/apps/patlive/items/*
 // @match        http*://podio.com/inhaletech/tets/apps/*
+// @match        http*://podio.com/richland-acquisitions/richland-acquisitions/apps/*
 // @require      https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
 // @grant        none
 // ==/UserScript==
@@ -117,15 +117,14 @@
         // send request to: generate new contract on GD and dropbox//
 
         debugger
-        // var url = "https://hook.eu1.make.com/nem6qe6af4mu9fpq34el7tc028hrsnum"
+        var url = "https://hook.eu1.make.com/nem6qe6af4mu9fpq34el7tc028hrsnum"
 
-        var url ="https://hook.eu1.make.com/apl9b99wu6lltzjko5ucu7guk28ka99x"  // for test
+       // var url ="https://hook.eu1.make.com/apl9b99wu6lltzjko5ucu7guk28ka99x"  // for test
 
         var errorText = "This contact already exists. Please add a new deal manually"
         var text = "Contact has been created."
 
         sendRequest( url, errorText, text)
-
     }
 
     window.sendContract = function()
@@ -142,7 +141,7 @@
 
             if (hidden.length > 0)
             {
-                alert("Generate the contact first!")
+                alert("Generate the contract first!")
                 return
             }
             else
@@ -174,7 +173,6 @@
          else{}
     }
 
-
     function addButton(frameId, buttonId)
     {
        // debugger
@@ -195,15 +193,16 @@
         //debugger
 
         var buttonArray = []
-        
+
         var generateContractButton = {}
         generateContractButton.frameId = '#generate-contract'
         generateContractButton.buttonId = "#button_create_new_contract"
 
+
         var sendContractButton = {}
         sendContractButton.frameId = '#send-psa-contract'
         sendContractButton.buttonId = "#button_send_contract"
-     
+
         buttonArray.push(generateContractButton, sendContractButton)
 
         buttonArray.forEach(objButton => {
