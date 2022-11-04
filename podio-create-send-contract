@@ -1,0 +1,228 @@
+// ==UserScript==
+// @name         podio.com create and send contracts
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  create new contract. send contract
+// @author       nataliia.kupich
+// @match        http*://podio.com/inhaletech/tets/apps/patlive/items/*
+// @match        http*://podio.com/inhaletech/tets/apps/*
+// @require      https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    function getHtmlButton(buttonId)
+    {
+        var out =``
+
+        var buttonIdText = buttonId.split('#')[1]
+        var functionText = ""
+        var buttonText = ""
+
+        if (buttonId ==="#button_create_new_contract")
+        {
+            functionText = "generateNewContract()"
+            buttonText = "Generate Contract"
+        }
+        else
+        {
+            functionText = "sendContract()"
+            buttonText = "Send PSA contract"
+        }
+        out =
+                ` <div id="{BUTTONID}" onclick="{ONCLICK}">
+                     <div>
+                        <button class="button-new secondary baby-button " type="button">
+                          <span>{TEXT}</span>
+                        </button>
+                     </div>
+                  </div>  `;
+
+        out = out.replaceAll("{BUTTONID}", buttonIdText)
+        out = out.replaceAll("{ONCLICK}", functionText)
+        out = out.replaceAll("{TEXT}",buttonText)
+
+        return out
+    }
+
+    function onXHRError(error)
+    {
+        console.log('HTTP REQUEST ERROR ' + JSON.stringify(error))
+        alert(error)
+    }
+
+    function sendRequest( url, errorText, text)
+    {
+        debugger
+
+        var out = {}
+
+        var itemId = $("li[class='float-left share verbose']")
+
+        if(itemId.length === 0)
+        {
+            alert("Save this item before send or create any data!")
+            return
+        }
+
+        itemId = itemId.attr("data-id")
+        out.itemId = itemId
+
+        var error = null
+
+        try
+        {
+            var request = new XMLHttpRequest()
+            var dataFormated = JSON.stringify(out)
+
+            console.log(dataFormated)
+
+            request.open('POST', url, true)
+
+            request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+            request.ontimeout = onXHRError
+            request.onerror = onXHRError
+
+            request.onreadystatechange = function(e)
+            {
+                if (request.readyState != 4) return
+
+                if (request.status === 200)
+                {
+                    console.log(request.responseText)
+
+                    var response = request.responseText
+                    alert(text)
+
+                }
+                else
+                {
+                    onXHRError(errorText)
+                }
+            }
+
+            request.send(dataFormated)
+        }
+        catch (e)
+        {
+            onXHRError(e.stack)
+        }
+    }
+
+    window.generateNewContract = function()
+    {
+        // send request to: generate new contract on GD and dropbox//
+
+        debugger
+        // var url = "https://hook.eu1.make.com/nem6qe6af4mu9fpq34el7tc028hrsnum"
+
+        var url ="https://hook.eu1.make.com/apl9b99wu6lltzjko5ucu7guk28ka99x"  // for test
+
+        var errorText = "This contact already exists. Please add a new deal manually"
+        var text = "Contact has been created."
+
+        sendRequest( url, errorText, text)
+
+    }
+
+    window.sendContract = function()
+    {
+       // send request to: Send PSA contract//
+        debugger
+
+       var isExecuted = confirm("Do you want to send the contract?");
+       console.log(isExecuted)
+
+       if (isExecuted)
+       {
+            var hidden = $("#contract-link.hidden")
+
+            if (hidden.length > 0)
+            {
+                alert("Generate the contact first!")
+                return
+            }
+            else
+            {
+                var clientEmail = $(".email-field-value-component.email-field-value-component__singleline")
+
+                if (clientEmail.length > 0)
+                {
+                    clientEmail = clientEmail[0].innerText
+
+                    if(clientEmail.indexOf("Email Address not set") ===-1)
+                    { // email exist, can send
+
+                        var url = "https://hook.eu1.make.com/8ddssvrpids6fcklbv87rcm9qwscpgqz"
+
+                        var errorText ="The contract has NOT been sent."
+                        var text = "The contract has been sent."
+
+                        sendRequest(url, errorText, text)
+                     }
+                    else
+                    {
+                        alert("Add email to the contacts first")
+                        return
+                    }
+                 }
+              }
+         }
+         else{}
+    }
+
+
+    function addButton(frameId, buttonId)
+    {
+       // debugger
+
+        var htmlButton = getHtmlButton(buttonId)
+
+        $(frameId+">div.frame-wrapper>div.frame-content>div[class='value view-mode']").prepend(htmlButton)
+
+    }
+
+    function removeButtonn(buttonId)
+    {
+        $(buttonId).remove()
+    }
+
+    function renewHTMLButton()
+    {
+        //debugger
+
+        var buttonArray = []
+        
+        var generateContractButton = {}
+        generateContractButton.frameId = '#generate-contract'
+        generateContractButton.buttonId = "#button_create_new_contract"
+
+        var sendContractButton = {}
+        sendContractButton.frameId = '#send-psa-contract'
+        sendContractButton.buttonId = "#button_send_contract"
+     
+        buttonArray.push(generateContractButton, sendContractButton)
+
+        buttonArray.forEach(objButton => {
+
+        removeButtonn(objButton.buttonId)
+        addButton(objButton.frameId, objButton.buttonId)
+
+    });
+
+    }
+
+    function renewEventListeners()
+    {
+       $("#wrapper").off('click');
+       $("#wrapper").on('click', function() { setTimeout(renewHTMLButton, 1000) });
+
+    }
+
+    setInterval(renewEventListeners, 1000);
+    setTimeout(renewHTMLButton, 1000);
+
+})();
