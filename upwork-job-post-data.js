@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         upwork.com
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.7
 // @description  todo
 // @author       gregory.tkach, nataliia.kupich
 // @match        http*://www.upwork.com/nx/jobs/*
@@ -38,7 +38,6 @@
 
     function addButtonPushToCRM(jobPostExists)
     {
-
         var htmlButton = getHtmlButton(jobPostExists)
         $(".cta-row").prepend(htmlButton)
     }
@@ -59,6 +58,8 @@
     // /////get request for id
     function checkIsJobPostAddedAndAddButton()
     {
+        addButtonPushToCRM(false)
+        return
 
         var data = {}
         addID(data)
@@ -137,6 +138,7 @@
 
         addToResult(out, "id", value)
     }
+
 
     function addOccupationName(out)
     {
@@ -295,8 +297,9 @@
 
     function addTotalSpend(out)
     {
-        var value = $("strong[data-qa='client-spend'] > span").first().text().trim()
-        value= value.replace('$','')
+        var value = $("strong[data-qa='client-spend'] > span").first()
+        value = value[0].innerText.replace('total spent','').trim()
+        value = value.replace('$','')
         value = value.replace('M+','000000')
         value = value.replace('k+','000')
         value = value.replace('+','')
@@ -359,6 +362,17 @@
         addToResult(out, "min-Price", value)
     }
 
+    function addClockHourly(out)
+    {
+        var tags = $("div[data-cy='clock-hourly']")
+        if (tags.length == 0) return
+
+        var fullText = $(tags[0].nextElementSibling)
+        var value = fullText.first().text().trim()
+
+        addToResult(out, "clock-hourly", value)
+
+    }
     // hour price max
     function addPriceTypeTimeLogMax(out)
     {
@@ -392,6 +406,19 @@
         addToResult(out, "fixedPrice", value)
     }
 
+    function addExpertise(out)
+    {
+
+        var tags = $("div[data-cy='expertise']")
+
+        if (tags.length == 0) return
+
+        var fullText = $(tags[0].nextElementSibling)
+       // var fullText = $(tags.first().get().nextElementSibling)
+        var value = fullText.first().text().trim()
+
+        addToResult(out, "expertise", value)
+    }
     // Less than nn hrs/week
     function addHourInWeek(out)
     {
@@ -532,6 +559,9 @@
 
         //////
 
+        addClockHourly(out)
+        addExpertise(out)
+
         addRatePaid(out)
         addHourlyRatePaid(out)
 
@@ -559,7 +589,7 @@
         ////////.
 
         addID(out)
-
+        
         addOccupationName(out)
         addOccupationID(out)
 
@@ -637,12 +667,10 @@
         }
     }
 
-
     function renewButtonPushToCRM()
     {
 
         removeButtonPushToCRM()
-
         checkIsJobPostAddedAndAddButton()
     }
 
@@ -651,7 +679,6 @@
         $(".job-tile-title").off('click');
         $(".job-tile-title").on("click", function() { setTimeout(renewButtonPushToCRM, 2000) });
     }
-
 
     setInterval(renewEventListeners, 2000);
     setTimeout(renewButtonPushToCRM, 3000);
