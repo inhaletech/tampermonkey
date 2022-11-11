@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         upwork.com
 // @namespace    http://tampermonkey.net/
-// @version      0.7
+// @version      0.8
 // @description  todo
 // @author       gregory.tkach, nataliia.kupich
 // @match        http*://www.upwork.com/nx/jobs/*
@@ -58,16 +58,18 @@
     // /////get request for id
     function checkIsJobPostAddedAndAddButton()
     {
-        addButtonPushToCRM(false)
-        return
+        debugger
+       // addButtonPushToCRM(false)
+       // return
 
         var data = {}
         addID(data)
+        data.id = data.id.replace('~','%7E')
         var error = null
 
         try
         {
-            var url = "https://script.google.com/macros/s/AKfycbz9AwjzgJlWHdGJyL5-zJj23ckH_JOlz1qS00Wc44XOldXx5nsKKbCwnvJPtfbtfuEa/exec?action=CHECK_JOB_POST&id=" + data.id + ""
+            var url = "https://script.google.com/macros/s/AKfycbwZembv1EZTUNJSb0TCl116g2iK2FybCQhPNsDMREvl-P21EQvvw6DmUaEWGQw3SAcn/exec?action=CHECK_JOB_POST&id=" + data.id + ""
             var request = new XMLHttpRequest()
             request.open('GET', url, true)
             request.ontimeout = onXHRError
@@ -589,7 +591,8 @@
         ////////.
 
         addID(out)
-        
+
+
         addOccupationName(out)
         addOccupationID(out)
 
@@ -622,6 +625,7 @@
 
         var error = null
         var url = "https://hook.eu1.make.com/elb021vtg3yydenqy2qzoviaj2b6lma9"
+        //var url = "https://hook.eu1.make.com/e2y4v4rwxqt49bmovbv26ilpkgjrqfc9" // test for ragic
 
         try
         {
