@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         upwork.com
 // @namespace    http://tampermonkey.net/
-// @version      0.8
+// @version      0.9
 // @description  todo
 // @author       gregory.tkach, nataliia.kupich
 // @match        http*://www.upwork.com/nx/jobs/*
@@ -34,8 +34,6 @@
         return out;
     }
 
-
-
     function addButtonPushToCRM(jobPostExists)
     {
         var htmlButton = getHtmlButton(jobPostExists)
@@ -52,7 +50,6 @@
 
         console.log('HTTP REQUEST ERROR ' + JSON.stringify(error))
     }
-
 
     //TODO:REVIEW
     // /////get request for id
@@ -300,6 +297,11 @@
     function addTotalSpend(out)
     {
         var value = $("strong[data-qa='client-spend'] > span").first()
+
+        if (value.length==0)
+        {
+            return
+        }
         value = value[0].innerText.replace('total spent','').trim()
         value = value.replace('$','')
         value = value.replace('M+','000000')
@@ -548,6 +550,8 @@
         var tags = $("section[class='up-card-section']>div>ol>li")
         var value = []
 
+        if (tags.length == 0) return
+
         for (var tag of tags)
         {
             value.push(tag.innerText)
@@ -592,7 +596,6 @@
 
         addID(out)
 
-
         addOccupationName(out)
         addOccupationID(out)
 
@@ -620,6 +623,8 @@
         addMemberSince(out)
 
         console.log(out)
+
+        debugger
 
         // push to make.com
 
